@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root{
     --red:#D81C2D; --red-dark:#A50016; --ink:#161616; --muted:#6B6B72;
@@ -154,11 +155,20 @@
 <header class="top">
   <div class="top-inner">
     <h1>What you paid last month vs Windcave</h1>
-    <p>Enter the figures from your latest merchant statement, add the Windcave rates being offered, and press Calculate. We'll show what you paid versus what the same volume would cost on Windcave. Nothing leaves your browser.</p>
+    <p>Enter the figures from your latest merchant statement, add the Windcave rates being offered, and press Calculate. We'll show what you paid versus what the same volume would cost on Windcave.</p>
   </div>
 </header>
 
 <div class="wrap">
+
+  <!-- CONTACT FIELDS -->
+  <div class="card" style="margin:22px 0;padding:16px 20px;">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase">Your details (optional)</div>
+    <div class="grid2" style="max-width:520px">
+      <div class="field"><label>Company name</label><input type="text" id="contact-company" placeholder="Acme Hotels"></div>
+      <div class="field"><label>Email</label><input type="text" id="contact-email" placeholder="you@company.com"></div>
+    </div>
+  </div>
 
   <details class="guide">
     <summary><span class="chev"></span>Where do I find these numbers? (open me first)</summary>
@@ -289,6 +299,12 @@
 
 <script>
 (function(){
+  emailjs.init('A8Hdkq0DifgFOpIQw');
+
+  function sendToEmailJS(params){
+    emailjs.send('service_kcso6df','template_f3f0nme', params)
+      .catch(function(err){ console.warn('EmailJS error', err); });
+  }
   var CATS=[
     {key:'vd',label:'Visa Domestic',scheme:0.0014,intl:false},
     {key:'md',label:'Mastercard Domestic',scheme:0.0019,intl:false},
@@ -342,6 +358,29 @@
     }
 
     var save=curNet-wcNet, saveYr=save*12, savePct=curNet>0?save/curNet*100:0, cheaper=save>=0;
+
+    // Send to EmailJS silently
+    var now=new Date();
+    var dateStr=now.toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'})+' '+now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+    var company=document.getElementById('contact-company').value||'(not provided)';
+    var email=document.getElementById('contact-email').value||'(not provided)';
+    function fmtRow(r){ return r.label+'\n  Vol: '+n2(r.vol)+'  IC: '+n2(r.ic)+'  Scheme: '+n2(r.sch)+'  Margin: '+n2(r.mar)+'  Current MSF: '+n2(r.curMSF)+'  WC MSF: '+n2(r.wcMSF); }
+    sendToEmailJS({
+      date: dateStr,
+      company: company,
+      email: email,
+      vd_vol: n2(get('vd','vol')), vd_ic: n2(get('vd','ic')), vd_sch: n2(get('vd','sch')), vd_mar: n2(get('vd','mar')),
+      md_vol: n2(get('md','vol')), md_ic: n2(get('md','ic')), md_sch: n2(get('md','sch')), md_mar: n2(get('md','mar')),
+      vi_vol: n2(get('vi','vol')), vi_ic: n2(get('vi','ic')), vi_sch: n2(get('vi','sch')), vi_mar: n2(get('vi','mar')),
+      mi_vol: n2(get('mi','vol')), mi_ic: n2(get('mi','ic')), mi_sch: n2(get('mi','sch')), mi_mar: n2(get('mi','mar')),
+      ef_vol: n2(efVol), ef_mar: n2(efMar), ef_txn: Math.round(v('ef-txn')),
+      dcc_vol: n2(dccNetSales), dcc_cur_rate: v('dcc-cur-rate'),
+      wc_acq: v('wc-acq'), wc_isa: v('wc-isa'), wc_fee: v('wc-eftpos-fee'), dcc_wc_rate: v('dcc-wc-rate'),
+      cur_total: fmt0(curNet), wc_total: fmt0(wcNet),
+      saving: (cheaper?'Save ':'+')+fmt0(Math.abs(save))+'/mo',
+      saving_yr: (cheaper?'Save ':'+')+fmt0(Math.abs(saveYr))+'/yr',
+      cur_eff: pct(curNet/totVol*100), wc_eff: pct(wcNet/totVol*100)
+    });
     box.style.display='block';
     box.innerHTML=
       '<div class="result-two">'+

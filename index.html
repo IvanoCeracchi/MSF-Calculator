@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windcave — Merchant Fee Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#D81C2D; --red-dark:#A50016; --ink:#161616; --muted:#6B6B72;
+    --line:#E6E6EA; --panel:#F7F7F9; --white:#FFFFFF;
+    --green:#15924F; --green-bg:#E9F6EF;
+    --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:#EFEFF2;line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,.display{font-family:'Archivo','Inter',sans-serif;letter-spacing:-.01em}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px 64px}
+
+  .logobar{background:#fff;border-bottom:1px solid var(--line)}
+  .logobar img.logo{display:block;height:30px;max-width:90%;margin:0 auto;padding:16px 20px;box-sizing:content-box;width:auto}
+  @media(min-width:760px){.logobar img.logo{margin:0;padding:18px 0 18px 20px}.logobar{padding-left:max(0px,calc((100% - 1120px)/2))}}
+
+  header.top{background:var(--red);color:#fff;border-bottom:4px solid var(--red-dark)}
+  .top-inner{max-width:1120px;margin:0 auto;padding:26px 20px 28px;display:flex;flex-direction:column;gap:6px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .mark{width:30px;height:30px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .brand .mark span{color:var(--red);font-family:'Archivo';font-weight:800;font-size:19px;line-height:1}
+  .brand .name{font-family:'Archivo';font-weight:800;font-size:20px;letter-spacing:.02em}
+  header.top h1{font-size:30px;font-weight:800;margin:10px 0 2px}
+  header.top p{margin:0;max-width:680px;color:#FFE2E5;font-size:15px}
+
+  details.guide{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);margin:22px 0;box-shadow:var(--shadow);overflow:hidden}
+  details.guide>summary{cursor:pointer;list-style:none;padding:16px 20px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:10px}
+  details.guide>summary::-webkit-details-marker{display:none}
+  .chev{width:18px;height:18px;border-right:2px solid var(--red);border-bottom:2px solid var(--red);transform:rotate(45deg);transition:transform .2s;flex:0 0 auto;margin-top:-4px}
+  details[open] .chev{transform:rotate(-135deg);margin-top:2px}
+  .guide-body{padding:0 20px 22px}
+  .guide-body p{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;font-size:13px}
+  .legend b{color:var(--red)}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .card.windcave{border:1.5px solid var(--red)}
+  .card .card-body{flex:1 1 auto;display:flex;flex-direction:column}
+  .panel-dcc{margin-top:auto}
+  .panel-dcc .pd-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--muted);margin:18px 0 10px;border-top:1px dashed var(--line);padding-top:16px}
+  .card.windcave .panel-dcc .pd-title{color:var(--red)}
+  .card-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .card-head .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .card-head h2{font-size:18px;margin:2px 0 0}
+  .pill{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:99px}
+  .pill.now{background:var(--panel);color:var(--muted)} .pill.wc{background:var(--red);color:#fff}
+  .card-body{padding:16px 20px 20px}
+
+  /* current input table */
+  .itable-scroll{overflow:auto;border:1px solid var(--line);border-radius:10px}
+  table.itable{width:100%;border-collapse:collapse;min-width:480px}
+  table.itable th,table.itable td{padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.itable thead th{background:var(--panel);font-size:11px;font-weight:700;color:var(--muted);text-align:right;white-space:nowrap}
+  table.itable thead th:first-child{text-align:left}
+  table.itable td:first-child{font-size:12.5px;font-weight:600;white-space:nowrap}
+  table.itable td:first-child small{display:block;font-weight:500;color:var(--muted);font-size:10.5px}
+  table.itable tbody tr:last-child td{border-bottom:none}
+  table.itable input{width:104px;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:'Inter';font-size:13px;text-align:right;color:var(--ink);background:#fff}
+  table.itable input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(216,28,45,.12)}
+  .micro{font-size:11.5px;color:var(--muted);margin:10px 2px 0}
+
+  .field label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  .inp{position:relative}
+  .inp .pre{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+  .inp .suf{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+  input[type=text]{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;font-family:'Inter';font-size:14px;color:var(--ink);background:#fff;transition:border-color .15s,box-shadow .15s}
+  input[type=text].haspct{padding-right:26px}
+  input[type=text].haspre{padding-left:24px}
+  input[type=text]:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(216,28,45,.12)}
+  input::placeholder{color:#C2C2CA}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .note-inline{font-size:12px;color:var(--muted);background:var(--panel);border-radius:9px;padding:10px 12px;margin-top:6px}
+  .rate h3{font-size:14px;margin:18px 0 3px}
+  .rate .hint{font-size:12px;color:var(--muted);margin:0 0 10px}
+
+  /* DCC panel */
+  .dcc{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:18px;padding:16px 20px}
+  .dcc h2{font-size:16px;margin:0 0 2px}
+  .dcc .sub{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .dcc .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:560px){.dcc .grid3{grid-template-columns:1fr}}
+
+  /* RESULT HERO */
+  .result{margin:22px 0 0;background:var(--ink);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .result-two{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:26px 28px 18px}
+  @media(max-width:560px){.result-two{grid-template-columns:1fr;text-align:center}.r-arrow{transform:rotate(90deg);margin:4px auto}.r-col.wc{text-align:center}}
+  .r-col{display:flex;flex-direction:column;gap:4px}
+  .r-col.wc{text-align:right}
+  .r-lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+  .r-now .r-lab{color:#C9C9D2} .r-wc .r-lab{color:#FFB3BA}
+  .r-num{font-family:'Archivo';font-weight:800;font-size:38px;line-height:1;color:#fff}
+  .r-eff{font-size:12.5px;color:#A9A9B4}
+  .r-arrow{font-family:'Archivo';font-size:26px;color:#FF8A95;font-weight:800}
+  .result-save{background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.12);padding:16px 28px;display:flex;flex-wrap:wrap;gap:8px 26px;align-items:center;font-size:14px;color:#D6D6DE}
+  .result-save .head{font-family:'Archivo';font-weight:800;font-size:17px;color:#fff}
+  .result-save .head.up{color:#FF8A95}
+  .result-save b{color:#fff;font-variant-numeric:tabular-nums}
+  .chip{display:inline-block;background:var(--green-bg);color:var(--green);font-weight:700;font-size:12px;padding:3px 9px;border-radius:99px}
+  .chip.warn{background:#FBE7E9;color:#FF8A95}
+
+  .rtable-wrap{margin-top:18px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .rtable-head{padding:14px 20px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+  .rscroll{overflow:auto}
+  table.rtable{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px}
+  table.rtable th,table.rtable td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+  table.rtable th:first-child,table.rtable td:first-child{text-align:left}
+  table.rtable thead th{font-weight:700;color:var(--ink);background:var(--panel)}
+  table.rtable td.cur{border-left:2px solid var(--line)}
+  table.rtable td.wc{border-left:2px solid #F2C9CE}
+  table.rtable th.grpcur{border-left:2px solid var(--line);color:var(--muted)}
+  table.rtable th.grpwc{border-left:2px solid var(--red);color:var(--red)}
+  table.rtable tr.tot td{font-weight:800;border-top:2px solid var(--ink);font-family:'Archivo'}
+  table.rtable tr.tot td.wcmsf{color:var(--red)}
+  table.rtable tr.rebate td{color:var(--green)}
+  table.rtable tr.net td{font-weight:800;font-family:'Archivo';border-top:1px solid var(--line)}
+  table.rtable tr.net td.wcmsf{color:var(--red)}
+
+  .eftpos{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel)}
+  .eftpos-title{font-size:12.5px;font-weight:700;margin-bottom:10px}
+  .eftpos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:10px}
+  .eftpos-grid .field label{font-size:10.5px}
+  .eftpos-grid input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:'Inter';font-size:13px;text-align:right;color:var(--ink);background:#fff}
+  .eftpos-grid input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(216,28,45,.12)}
+  .dcc-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px}
+  @media(max-width:560px){.dcc-cols{grid-template-columns:1fr}}
+  .dcc-side{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .dcc-side-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;margin-bottom:10px}
+  .dcc-side-title.now{color:var(--muted)} .dcc-side-title.wc{color:var(--red)}
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  button.btn{font-family:'Inter';font-weight:700;font-size:14px;padding:12px 22px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  button.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+  button.btn:hover{filter:brightness(.97)}
+  .disclaimer{margin-top:26px;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+  .disclaimer b{color:var(--ink)}
+
+  @media print{body{background:#fff}.actions,details.guide,.note-inline{display:none!important}.card,.result,.rtable-wrap,.dcc{box-shadow:none;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+
+<div class="logobar"><img class="logo" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMjAxLjE5MSIgaGVpZ2h0PSI0MC4zMDE2IiB2aWV3Qm94PSIwIDAgMjAxLjE5MSA0MC4zMDE2Ij4KPGRlZnM+CjxjbGlwUGF0aCBpZD0iY2xpcC0wIj4KPHBhdGggY2xpcC1ydWxlPSJub256ZXJvIiBkPSJNIDEuMzE2NDA2IDAgTCA0MSAwIEwgNDEgMzkuNjEzMjgxIEwgMS4zMTY0MDYgMzkuNjEzMjgxIFogTSAxLjMxNjQwNiAwICIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+CjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDEwMCUsIDI3LjA1ODQxMSUsIDIyLjM1MjYlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDc0LjMwMDc4MSAyNC40NTMxMjUgTCA2OS40Njg3NSA5LjMzNTkzOCBMIDY1LjQ4NDM3NSA5LjMzNTkzOCBMIDYwLjYyMTA5NCAyNC40NTMxMjUgTCA1NS44NTE1NjIgOS4zMzU5MzggTCA1MC43MjY1NjIgOS4zMzU5MzggTCA1OC41NjI1IDMyLjE5MTQwNiBMIDYyLjU0Njg3NSAzMi4xOTE0MDYgTCA2Ny40MTQwNjIgMTYuOTQxNDA2IEwgNzIuMjc3MzQ0IDMyLjE5MTQwNiBMIDc2LjI5Mjk2OSAzMi4xOTE0MDYgTCA4NC4xMzI4MTIgOS4zMzU5MzggTCA3OS4xMDE1NjIgOS4zMzU5MzggWiBNIDc0LjMwMDc4MSAyNC40NTMxMjUgIi8+CjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDEwMCUsIDI3LjA1ODQxMSUsIDIyLjM1MjYlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDE3My4xNTIzNDQgMjYuMjUgTCAxNjkuMzY3MTg4IDE2LjA2MjUgTCAxNjQuMzM5ODQ0IDE2LjA2MjUgTCAxNzAuOTAyMzQ0IDMyLjE5NTMxMiBMIDE3NS4yNzczNDQgMzIuMTk1MzEyIEwgMTgxLjgzOTg0NCAxNi4wNjI1IEwgMTc2Ljk0MTQwNiAxNi4wNjI1IFogTSAxNzMuMTUyMzQ0IDI2LjI1ICIvPgo8cGF0aCBmaWxsLXJ1bGU9Im5vbnplcm8iIGZpbGw9InJnYigxMDAlLCAyNy4wNTg0MTElLCAyMi4zNTI2JSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSAxNTQuMDUwNzgxIDI4LjMwODU5NCBDIDE1MS43MzQzNzUgMjguMzA4NTk0IDE0OS45MDYyNSAyNi40NDUzMTIgMTQ5LjkwNjI1IDI0LjEyODkwNiBDIDE0OS45MDYyNSAyMS44MDg1OTQgMTUxLjczNDM3NSAxOS45NDkyMTkgMTU0LjA1MDc4MSAxOS45NDkyMTkgQyAxNTYuMzcxMDk0IDE5Ljk0OTIxOSAxNTguMTk5MjE5IDIxLjgwODU5NCAxNTguMTk5MjE5IDI0LjEyODkwNiBDIDE1OC4xOTkyMTkgMjYuNDQ1MzEyIDE1Ni4zNzEwOTQgMjguMzA4NTk0IDE1NC4wNTA3ODEgMjguMzA4NTk0IE0gMTU4LjAzNTE1NiAxOC4xNTIzNDQgQyAxNTYuODkwNjI1IDE2LjQ4ODI4MSAxNTQuOTMzNTk0IDE1LjY3MTg3NSAxNTIuODA4NTk0IDE1LjY3MTg3NSBDIDE0OC41IDE1LjY3MTg3NSAxNDUuMTY3OTY5IDE5LjM1OTM3NSAxNDUuMTY3OTY5IDI0LjEyODkwNiBDIDE0NS4xNjc5NjkgMjguOTI5Njg4IDE0OC41IDMyLjU4NTkzOCAxNTIuODA4NTk0IDMyLjU4NTkzOCBDIDE1NC45MzM1OTQgMzIuNTg1OTM4IDE1Ni44OTA2MjUgMzEuNzAzMTI1IDE1OC4wMzUxNTYgMzAuMDM5MDYyIEwgMTU4LjAzNTE1NiAzMi4xOTE0MDYgTCAxNjIuNzA3MDMxIDMyLjE5MTQwNiBMIDE2Mi43MDcwMzEgMTYuMDYyNSBMIDE1OC4wMzUxNTYgMTYuMDYyNSBaIE0gMTU4LjAzNTE1NiAxOC4xNTIzNDQgIi8+CjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDEwMCUsIDI3LjA1ODQxMSUsIDIyLjM1MjYlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDg1LjE4MzU5NCAzMi4xOTE0MDYgTCA4OS45NTMxMjUgMzIuMTkxNDA2IEwgODkuOTUzMTI1IDE2LjA2MjUgTCA4NS4xODM1OTQgMTYuMDYyNSBaIE0gODUuMTgzNTk0IDMyLjE5MTQwNiAiLz4KPHBhdGggZmlsbC1ydWxlPSJub256ZXJvIiBmaWxsPSJyZ2IoMTAwJSwgMjcuMDU4NDExJSwgMjIuMzUyNiUpIiBmaWxsLW9wYWNpdHk9IjEiIGQ9Ik0gMTg2LjYwOTM3NSAyMi4zMzIwMzEgQyAxODYuNzczNDM4IDIwLjc5Njg3NSAxODguMzM5ODQ0IDE5LjM1OTM3NSAxOTAuMjM0Mzc1IDE5LjM1OTM3NSBDIDE5Mi4xOTE0MDYgMTkuMzU5Mzc1IDE5My41OTc2NTYgMjAuNjAxNTYyIDE5My44MjQyMTkgMjIuMzMyMDMxIFogTSAxOTguNDk2MDk0IDI0LjI1NzgxMiBDIDE5OC40OTYwOTQgMTkuMTk1MzEyIDE5NS4xMzI4MTIgMTUuNjM2NzE5IDE5MC4yNjU2MjUgMTUuNjM2NzE5IEMgMTg1LjUgMTUuNjM2NzE5IDE4MS45MDYyNSAxOS4yNjE3MTkgMTgxLjkwNjI1IDI0LjEyODkwNiBDIDE4MS45MDYyNSAyOS4xMjEwOTQgMTg1LjQzMzU5NCAzMi42MTcxODggMTkwLjQ2MDkzOCAzMi42MTcxODggQyAxOTMuOTg4MjgxIDMyLjYxNzE4OCAxOTYuNjAxNTYyIDMwLjk4NDM3NSAxOTcuOTQxNDA2IDI4LjMzOTg0NCBMIDE5My45MjE4NzUgMjYuNzQyMTg4IEMgMTkzLjE3MTg3NSAyNy45NDkyMTkgMTkyLjI1NzgxMiAyOC42OTkyMTkgMTkwLjQ2MDkzOCAyOC42OTkyMTkgQyAxODguNDY4NzUgMjguNjk5MjE5IDE4Ni43MzgyODEgMjcuMzI4MTI1IDE4Ni41NzgxMjUgMjUuNDMzNTk0IEwgMTk4LjQyOTY4OCAyNS40MzM1OTQgQyAxOTguNDYwOTM4IDI1LjIwNzAzMSAxOTguNDk2MDk0IDI0LjgxMjUgMTk4LjQ5NjA5NCAyNC4yNTc4MTIgIi8+CjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDEwMCUsIDI3LjA1ODQxMSUsIDIyLjM1MjYlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDExOS45Mjk2ODggMjguMzA4NTk0IEMgMTE3LjYwOTM3NSAyOC4zMDg1OTQgMTE1Ljc4MTI1IDI2LjQ0NTMxMiAxMTUuNzgxMjUgMjQuMTI4OTA2IEMgMTE1Ljc4MTI1IDIxLjgwODU5NCAxMTcuNjA5Mzc1IDE5Ljk0OTIxOSAxMTkuOTI5Njg4IDE5Ljk0OTIxOSBDIDEyMi4yNDYwOTQgMTkuOTQ5MjE5IDEyNC4wNzQyMTkgMjEuODA4NTk0IDEyNC4wNzQyMTkgMjQuMTI4OTA2IEMgMTI0LjA3NDIxOSAyNi40NDUzMTIgMTIyLjI0NjA5NCAyOC4zMDg1OTQgMTE5LjkyOTY4OCAyOC4zMDg1OTQgTSAxMjMuOTEwMTU2IDE4LjE1MjM0NCBDIDEyMi43Njk1MzEgMTYuNDg4MjgxIDEyMC44MTI1IDE1LjY3MTg3NSAxMTguNjg3NSAxNS42NzE4NzUgQyAxMTQuMzc4OTA2IDE1LjY3MTg3NSAxMTEuMDQ2ODc1IDE5LjM1OTM3NSAxMTEuMDQ2ODc1IDI0LjEyODkwNiBDIDExMS4wNDY4NzUgMjguOTI5Njg4IDExNC4zNzg5MDYgMzIuNTg1OTM4IDExOC42ODc1IDMyLjU4NTkzOCBDIDEyMC44MTI1IDMyLjU4NTkzOCAxMjIuNzY5NTMxIDMxLjcwMzEyNSAxMjMuOTEwMTU2IDMwLjAzOTA2MiBMIDEyMy45MTAxNTYgMzIuMTkxNDA2IEwgMTI4LjY0NDUzMSAzMi4xOTE0MDYgTCAxMjguNjQ0NTMxIDkuMzM1OTM4IEwgMTIzLjkxMDE1NiA5LjMzNTkzOCBaIE0gMTIzLjkxMDE1NiAxOC4xNTIzNDQgIi8+CjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDEwMCUsIDI3LjA1ODQxMSUsIDIyLjM1MjYlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDEzNS42OTkyMTkgMjQuMTI4OTA2IEMgMTM1LjY5OTIxOSAyMS42Nzk2ODggMTM3LjU2MjUgMTkuOTQ5MjE5IDE0MC4wNzQyMTkgMTkuOTQ5MjE5IEMgMTQxLjI4NTE1NiAxOS45NDkyMTkgMTQyLjQ1NzAzMSAyMC4zMzk4NDQgMTQzLjU3MDMxMiAyMS4xMjUgTCAxNDMuNTcwMzEyIDE2LjY0ODQzOCBDIDE0Mi4zOTQ1MzEgMTUuOTY0ODQ0IDE0MC45MjU3ODEgMTUuNjM2NzE5IDEzOS41MTk1MzEgMTUuNjM2NzE5IEMgMTM0LjQ2MDkzOCAxNS42MzY3MTkgMTMwLjg5ODQzOCAxOS4yNjE3MTkgMTMwLjg5ODQzOCAyNC4xMjg5MDYgQyAxMzAuODk4NDM4IDI5LjE4NzUgMTM0LjQ5MjE4OCAzMi42MTcxODggMTM5LjQ1MzEyNSAzMi42MTcxODggQyAxNDAuODU5Mzc1IDMyLjYxNzE4OCAxNDIuMjk2ODc1IDMyLjMyNDIxOSAxNDMuNjAxNTYyIDMxLjU3NDIxOSBMIDE0My42MDE1NjIgMjcuMDY2NDA2IEMgMTQyLjU4OTg0NCAyNy44MTY0MDYgMTQxLjM0NzY1NiAyOC4zMDg1OTQgMTQwLjA3NDIxOSAyOC4zMDg1OTQgQyAxMzcuNTYyNSAyOC4zMDg1OTQgMTM1LjY5OTIxOSAyNi41NzgxMjUgMTM1LjY5OTIxOSAyNC4xMjg5MDYgIi8+CjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDEwMCUsIDI3LjA1ODQxMSUsIDIyLjM1MjYlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDEwMi44NTE1NjIgMTUuNjM2NzE5IEMgMTAwLjY2MDE1NiAxNS42MzY3MTkgOTkuMDkzNzUgMTYuNTU0Njg4IDk4LjA4MjAzMSAxOC4xMjEwOTQgTCA5OC4wODIwMzEgMTYuMDYyNSBMIDkzLjMxNjQwNiAxNi4wNjI1IEwgOTMuMzE2NDA2IDMyLjE5MTQwNiBMIDk4LjA4MjAzMSAzMi4xOTE0MDYgTCA5OC4wODIwMzEgMjMuNjM2NzE5IEMgOTguMDgyMDMxIDIxLjM4MjgxMiA5OS4yOTI5NjkgMjAuMDExNzE5IDEwMS4xMTcxODggMjAuMDExNzE5IEMgMTAyLjk4MDQ2OSAyMC4wMTE3MTkgMTA0LjAyNzM0NCAyMS4yMjI2NTYgMTA0LjAyNzM0NCAyMy4zNDM3NSBMIDEwNC4wMjczNDQgMzIuMTkxNDA2IEwgMTA4Ljc5Mjk2OSAzMi4xOTE0MDYgTCAxMDguNzkyOTY5IDIyLjIzNDM3NSBDIDEwOC43OTI5NjkgMTguMTUyMzQ0IDEwNi41MzkwNjIgMTUuNjM2NzE5IDEwMi44NTE1NjIgMTUuNjM2NzE5ICIvPgo8cGF0aCBmaWxsLXJ1bGU9Im5vbnplcm8iIGZpbGw9InJnYigxMDAlLCAyNy4wNTg0MTElLCAyMi4zNTI2JSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSA4Ny42NTIzNDQgOC44OTQ1MzEgQyA4Ni4xMjUgOC44OTQ1MzEgODQuOTQ5MjE5IDEwLjE2Nzk2OSA4NC45NDkyMTkgMTEuNTk3NjU2IEMgODQuOTQ5MjE5IDEzLjAyNzM0NCA4Ni4xMjUgMTQuMzAwNzgxIDg3LjY1MjM0NCAxNC4zMDA3ODEgQyA4OS4xNzU3ODEgMTQuMzAwNzgxIDkwLjM1NTQ2OSAxMy4wMjczNDQgOTAuMzU1NDY5IDExLjU5NzY1NiBDIDkwLjM1NTQ2OSAxMC4xNjc5NjkgODkuMTc1NzgxIDguODk0NTMxIDg3LjY1MjM0NCA4Ljg5NDUzMSAiLz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAtMCkiPgo8cGF0aCBmaWxsLXJ1bGU9Im5vbnplcm8iIGZpbGw9InJnYigxMDAlLCAyNy4wNTg0MTElLCAyMi4zNTI2JSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSAzNS4xNjQwNjIgMjkuOTY0ODQ0IEwgMzEuODIwMzEyIDI5Ljk2NDg0NCBDIDMzLjM3NSAyNy4zOTg0MzggMzQuMjMwNDY5IDI0LjM2MzI4MSAzNC4yMzA0NjkgMjEuNDQ1MzEyIEMgMzQuMjMwNDY5IDEyLjI2NTYyNSAyNi44Mzk4NDQgNC41NjI1IDE2LjgwMDc4MSA0LjU2MjUgQyAxNS43MTA5MzggNC41NjI1IDE0LjQ2ODc1IDQuNjc5Njg4IDEyLjg3MTA5NCA1LjAzMTI1IEwgMTIuODcxMDk0IDQuODM1OTM4IEMgMTUuNTE1NjI1IDMuNjI4OTA2IDE4LjQzMzU5NCAzLjE2MDE1NiAyMS4xMjEwOTQgMy4xNjAxNTYgQyAzMC43Njk1MzEgMy4xNjAxNTYgMzguMzE2NDA2IDEwLjg2MzI4MSAzOC4zMTY0MDYgMjAuMTY0MDYyIEMgMzguMzE2NDA2IDIzLjc4MTI1IDM3LjE0ODQzOCAyNy4xNjQwNjIgMzUuMTY0MDYyIDI5Ljk2NDg0NCBNIDIxLjMxNjQwNiAzNy4xMjUgQyAxNi43NjE3MTkgMzcuMTI1IDEyLjU1ODU5NCAzNS4yOTY4NzUgOS40ODgyODEgMzIuMzAwNzgxIEwgMzMuMTc5Njg4IDMyLjMwMDc4MSBDIDMwLjE0NDUzMSAzNS4yNTc4MTIgMjUuOTQxNDA2IDM3LjEyNSAyMS4zMTY0MDYgMzcuMTI1IE0gNy41ODIwMzEgMzAuMDgyMDMxIEMgNS41OTc2NTYgMjcuMzIwMzEyIDQuMzkwNjI1IDIzLjg5ODQzOCA0LjM5MDYyNSAyMC4xNjQwNjIgQyA0LjM5MDYyNSAxOC45NTcwMzEgNC41MDc4MTIgMTcuODI4MTI1IDQuNzAzMTI1IDE2LjY5OTIxOSBDIDguODI4MTI1IDE3LjA1MDc4MSAxMS43MDMxMjUgMjAuMDQ2ODc1IDExLjcwMzEyNSAyMy42NjQwNjIgQyAxMS43MDMxMjUgMjYuMzA4NTk0IDEwLjA3MDMxMiAyOC42Nzk2ODggNy41ODIwMzEgMzAuMDgyMDMxIE0gNC45MzM1OTQgMTQuMzY3MTg4IEMgNi4zNzUgMTMuODU5Mzc1IDcuNjYwMTU2IDEzLjY2NDA2MiA5LjAxOTUzMSAxMy42NjQwNjIgQyAxNC4yMzQzNzUgMTMuNjY0MDYyIDE4LjMyMDMxMiAxNy43NSAxOC4zMjAzMTIgMjIuODg2NzE5IEMgMTguMzIwMzEyIDI1LjQ5MjE4OCAxNy4yNjk1MzEgMjguMDE5NTMxIDE1LjQ0MTQwNiAyOS45NjQ4NDQgTCAxMS4zOTQ1MzEgMjkuOTY0ODQ0IEMgMTIuOTQ5MjE5IDI4LjM3MTA5NCAxNC4wNzgxMjUgMjYuMTkxNDA2IDE0LjA3ODEyNSAyMy42NjQwNjIgQyAxNC4wNzgxMjUgMTguODAwNzgxIDEwLjIyNjU2MiAxNC45MTAxNTYgNC45MzM1OTQgMTQuNTU4NTk0IFogTSA2LjAyMzQzOCAxMS42ODM1OTQgQyA4LjMyMDMxMiAxMC42MzI4MTIgMTAuNjk1MzEyIDEwLjIwMzEyNSAxMi42NzU3ODEgMTAuMjAzMTI1IEMgMTkuNjQwNjI1IDEwLjIwMzEyNSAyNS4wNTA3ODEgMTUuODA0Njg4IDI1LjA1MDc4MSAyMi4yNjU2MjUgQyAyNS4wNTA3ODEgMjUuMTAxNTYyIDI0LjAzOTA2MiAyNy44MjgxMjUgMjIuMjQ2MDk0IDI5Ljk2NDg0NCBMIDE4LjM5ODQzOCAyOS45NjQ4NDQgQyAxOS44NzUgMjcuODY3MTg4IDIwLjc2OTUzMSAyNS4yOTY4NzUgMjAuNzY5NTMxIDIyLjczMDQ2OSBDIDIwLjc2OTUzMSAxNi40Njg3NSAxNS42MzI4MTIgMTEuNDQ5MjE5IDkuMTM2NzE5IDExLjQ0OTIxOSBDIDguMTY0MDYyIDExLjQ0OTIxOSA3LjIzMDQ2OSAxMS41NjY0MDYgNi4wMjM0MzggMTEuODc1IFogTSA4LjM1OTM3NSA4LjU3MDMxMiBDIDEwLjczMDQ2OSA3LjMyNDIxOSAxMy4zNzg5MDYgNi43NDIxODggMTYuNDQ5MjE5IDYuNzQyMTg4IEMgMjUuMDg5ODQ0IDYuNzQyMTg4IDMxLjc0MjE4OCAxMy40Njg3NSAzMS43NDIxODggMjEuNDQ1MzEyIEMgMzEuNzQyMTg4IDI0LjM2MzI4MSAzMC43Njk1MzEgMjcuNDc2NTYyIDI4Ljg5ODQzOCAyOS45NjQ4NDQgTCAyNS4xNjQwNjIgMjkuOTY0ODQ0IEMgMjYuNjQ0NTMxIDI3LjcxMDkzOCAyNy41IDI1LjA2MjUgMjcuNSAyMi4yNjU2MjUgQyAyNy41IDE0LjM2NzE4OCAyMS4xMjEwOTQgNy45ODQzNzUgMTIuOTEwMTU2IDcuOTg0Mzc1IEMgMTEuNDMzNTk0IDcuOTg0Mzc1IDkuODc1IDguMjU3ODEyIDguMzU5Mzc1IDguNzY1NjI1IFogTSAyMS4zMTY0MDYgMC43MTA5MzggQyAxMC42MTcxODggMC43MTA5MzggMS45MDIzNDQgOS4zODY3MTkgMS45MDIzNDQgMjAuMTY0MDYyIEMgMS45MDIzNDQgMzEuMDU0Njg4IDEwLjczMDQ2OSAzOS42MTMyODEgMjEuMzE2NDA2IDM5LjYxMzI4MSBDIDMyLjIwNzAzMSAzOS42MTMyODEgNDAuODA0Njg4IDMwLjc0NjA5NCA0MC44MDQ2ODggMjAuMTY0MDYyIEMgNDAuODA0Njg4IDkuNTAzOTA2IDMyLjEyODkwNiAwLjcxMDkzOCAyMS4zMTY0MDYgMC43MTA5MzggIi8+CjwvZz4KPC9zdmc+Cg==" alt="Windcave"></div>
+<header class="top">
+  <div class="top-inner">
+    <h1>What you paid last month vs Windcave</h1>
+    <p>Enter the figures from your latest merchant statement, add the Windcave rates being offered, and press Calculate. We'll show what you paid versus what the same volume would cost on Windcave. Nothing leaves your browser.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <details class="guide">
+    <summary><span class="chev"></span>Where do I find these numbers? (open me first)</summary>
+    <div class="guide-body">
+      <p>Your statement lists each card type with money columns for net sales, interchange, scheme and margin. Group the lines into the four rows below and copy across the totals. Ignore the minus signs.</p>
+      <div class="legend">
+        <span><b>Visa Domestic</b> = Visa debit + credit (local)</span>
+        <span><b>Mastercard Domestic</b> = Mastercard debit + credit (local)</span>
+        <span><b>Visa / Mastercard International</b> = overseas-issued cards</span>
+      </div>
+      <p style="margin-top:14px">This calculator covers Mastercard, Visa, DCC and Epal/EFTPOS only. Other payment types — Discover, UnionPay, Amex — are not included in the calculation.</p>
+    </div>
+  </details>
+
+  <div class="cols">
+
+    <!-- CURRENT -->
+    <section class="card" id="currentCard">
+      <div class="card-head"><div><div class="eyebrow">From your statement</div><h2>What you pay now</h2></div><span class="pill now">Current</span></div>
+      <div class="card-body">
+        <div class="itable-scroll">
+          <table class="itable">
+            <thead><tr><th>Card type</th><th>Volume</th><th>Interchange</th><th>Scheme</th><th>Margin</th></tr></thead>
+            <tbody>
+              <tr data-cat="vd"><td>Visa<small>Domestic</small></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="vol" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="ic" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="sch" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="mar" placeholder="$0.00"></td></tr>
+              <tr data-cat="md"><td>Mastercard<small>Domestic</small></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="vol" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="ic" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="sch" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="mar" placeholder="$0.00"></td></tr>
+              <tr data-cat="vi"><td>Visa<small>International</small></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="vol" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="ic" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="sch" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="mar" placeholder="$0.00"></td></tr>
+              <tr data-cat="mi"><td>Mastercard<small>International</small></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="vol" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="ic" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="sch" placeholder="$0.00"></td>
+                <td><input type="text" class="cur" inputmode="decimal" data-f="mar" placeholder="$0.00"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="eftpos">
+          <div class="eftpos-title">EFTPOS / Epal</div>
+          <div class="eftpos-grid">
+            <div class="field"><label>Net sales</label><input type="text" class="cur" inputmode="decimal" id="ef-vol" placeholder="$0.00"></div>
+            <div class="field"><label>Margin</label><input type="text" class="cur" inputmode="decimal" id="ef-mar" placeholder="$0.00"></div>
+            <div class="field"><label>Transactions</label><input type="text" inputmode="decimal" id="ef-txn" placeholder="0"></div>
+          </div>
+        </div>
+        <p class="micro">All amounts in AUD. EFTPOS current fee = margin.</p>
+        <div class="panel-dcc">
+          <div class="pd-title">DCC rebate — current (optional)</div>
+          <div class="grid2">
+            <div class="field"><label>Net sales</label><input type="text" class="cur" inputmode="decimal" id="dcc-cur-value" placeholder="$0.00"></div>
+            <div class="field"><label>Rebate rate</label><div class="inp"><input type="text" class="haspct" inputmode="decimal" id="dcc-cur-rate" value="0"><span class="suf">%</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WINDCAVE -->
+    <section class="card windcave" id="wcCard">
+      <div class="card-head"><div><div class="eyebrow">Rates being offered</div><h2>With Windcave</h2></div><span class="pill wc">Windcave</span></div>
+      <div class="card-body">
+        <div class="note-inline" style="margin-top:0">Interchange is passed through at cost and scheme is handled in the background. Enter only the two rates you're quoting.</div>
+
+        <div class="rate">
+          <h3>Acquiring margin (ACQ)</h3>
+          <p class="hint">Applies to all volume. This is the domestic rate.</p>
+          <div class="field"><div class="inp"><input type="text" class="haspct" inputmode="decimal" id="wc-acq" value="0"><span class="suf">%</span></div></div>
+        </div>
+
+        <div class="rate">
+          <h3>International loading (ISA)</h3>
+          <p class="hint">Added to the ACQ for international cards only.</p>
+          <div class="field"><div class="inp"><input type="text" class="haspct" inputmode="decimal" id="wc-isa" value="0"><span class="suf">%</span></div></div>
+        </div>
+
+        <div class="rate">
+          <h3>EFTPOS / Epal</h3>
+          <p class="hint">Flat fee per transaction × transaction count from "What you pay now".</p>
+          <div class="field"><label>Fee per transaction</label><div class="inp"><span class="pre">$</span><input type="text" class="haspre" inputmode="decimal" id="wc-eftpos-fee" value="0"></div></div>
+        </div>
+
+        <div class="panel-dcc">
+          <div class="pd-title">DCC rebate — Windcave (optional)</div>
+          <div class="field"><label>Rebate rate</label><div class="inp"><input type="text" class="haspct" inputmode="decimal" id="dcc-wc-rate" value="0"><span class="suf">%</span></div></div>
+          <div class="note-inline" style="margin-top:8px">Applied to the same net sales entered under "What you pay now".</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="calculate">Calculate</button>
+    <button class="btn" id="reset">Clear all</button>
+    <button class="btn" id="print">Print / Save PDF</button>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result" class="result" style="display:none"></div>
+
+  <div class="rtable-wrap" id="rtableWrap" style="display:none">
+    <div class="rtable-head">Line-by-line breakdown</div>
+    <div class="rscroll">
+      <table class="rtable">
+        <thead><tr>
+          <th>Card type</th><th>Volume</th><th>Interchange</th><th>Scheme</th><th>Margin</th>
+          <th class="grpcur">Current MSF</th>
+          <th class="grpwc">WC Scheme</th><th>WC ACQ</th><th>WC MSF</th>
+        </tr></thead>
+        <tbody id="rtableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <b>How to read this:</b> Interchange is set by Visa/Mastercard and passed through at cost on both sides. Windcave bills scheme at a fixed 0.14% of Visa volume and 0.19% of Mastercard volume (applied in the background). The acquiring margin you enter applies to all volume; the international loading is added on top for overseas cards. This is an indicative monthly comparison from the figures entered, shown ex-GST; GST applies on top of both providers' fees and doesn't change the saving. Fixed costs (terminal/gateway, monthly minimums, PCI, chargebacks) sit outside this view.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var CATS=[
+    {key:'vd',label:'Visa Domestic',scheme:0.0014,intl:false},
+    {key:'md',label:'Mastercard Domestic',scheme:0.0019,intl:false},
+    {key:'vi',label:'Visa International',scheme:0.0014,intl:true},
+    {key:'mi',label:'Mastercard International',scheme:0.0019,intl:true}
+  ];
+  function num(v){ if(v==null) return 0; v=(''+v).replace(/[^0-9.\-]/g,''); var n=parseFloat(v); return isNaN(n)?0:Math.abs(n); }
+  function fmt0(n){ return '$'+Math.round(n).toLocaleString('en-AU'); }
+  function n2(n){ return n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function pct(n){ return n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'; }
+  function get(cat,f){ var el=document.querySelector('tr[data-cat="'+cat+'"] input[data-f="'+f+'"]'); return el?num(el.value):0; }
+  function v(id){ return num(document.getElementById(id).value); }
+
+  function calculate(){
+    var acq=v('wc-acq')/100, isa=v('wc-isa')/100, perTxnFee=v('wc-eftpos-fee'), wcEftposTxns=v('ef-txn');
+    var dccNetSales=v('dcc-cur-value'), curDccRate=v('dcc-cur-rate')/100, wcDccRate=v('dcc-wc-rate')/100;
+
+    var totVol=0, curTotal=0, wcTotal=0, rows=[];
+    var sumIC=0,sumSch=0,sumMar=0,sumWcSch=0,sumWcAcq=0;
+    CATS.forEach(function(c){
+      var vol=get(c.key,'vol'), ic=get(c.key,'ic'), sch=get(c.key,'sch'), mar=get(c.key,'mar');
+      var curMSF=ic+sch+mar;
+      var acqRate = c.intl ? (acq+isa) : acq;
+      var wcSch=c.scheme*vol, wcAcq=acqRate*vol, wcMSF=ic+wcSch+wcAcq;
+      rows.push({label:c.label,vol:vol,ic:ic,sch:sch,mar:mar,curMSF:curMSF,wcSch:wcSch,wcAcq:wcAcq,wcMSF:wcMSF});
+      totVol+=vol; curTotal+=curMSF; wcTotal+=wcMSF;
+      sumIC+=ic; sumSch+=sch; sumMar+=mar; sumWcSch+=wcSch; sumWcAcq+=wcAcq;
+    });
+
+    // EFTPOS / Epal — current fee is the margin; Windcave is a flat fee per EFTPOS transaction
+    var efVol=v('ef-vol'), efMar=v('ef-mar'), efTxn=v('ef-txn');
+    var efCurMSF=efMar;
+    var efWcAcq=perTxnFee*wcEftposTxns;
+    var efWcMSF=efWcAcq;
+    var efHasData=(efVol>0||efMar>0||efTxn>0||wcEftposTxns>0);
+    if(efHasData) rows.push({label:'EFTPOS / Epal'+(wcEftposTxns>0?' ('+Math.round(wcEftposTxns).toLocaleString('en-AU')+' txns &times; $'+perTxnFee.toFixed(2)+')':''),vol:efVol,ic:0,sch:0,mar:efMar,curMSF:efCurMSF,wcSch:0,wcAcq:efWcAcq,wcMSF:efWcMSF});
+    totVol+=efVol; curTotal+=efCurMSF; wcTotal+=efWcMSF;
+    sumMar+=efMar; sumWcAcq+=efWcAcq;
+
+    var curRebate=curDccRate*dccNetSales, wcRebate=wcDccRate*dccNetSales;
+    var curNet=curTotal-curRebate, wcNet=wcTotal-wcRebate;
+    var hasDcc=(curRebate>0||wcRebate>0);
+
+    var box=document.getElementById('result');
+    var tbl=document.getElementById('rtableWrap');
+    if(totVol<=0){
+      box.style.display='block';
+      box.innerHTML='<div style="padding:26px 28px;color:#C9C9D2;font-size:14px">Add your statement volumes, then press Calculate.</div>';
+      tbl.style.display='none';
+      return;
+    }
+
+    var save=curNet-wcNet, saveYr=save*12, savePct=curNet>0?save/curNet*100:0, cheaper=save>=0;
+    box.style.display='block';
+    box.innerHTML=
+      '<div class="result-two">'+
+        '<div class="r-col r-now"><span class="r-lab">You paid last month</span><span class="r-num">'+fmt0(curNet)+'</span><span class="r-eff">'+pct(curNet/totVol*100)+' of turnover'+(curRebate>0?' &middot; incl. DCC rebate':'')+'</span></div>'+
+        '<div class="r-arrow">&rarr;</div>'+
+        '<div class="r-col r-wc wc"><span class="r-lab">On Windcave</span><span class="r-num">'+fmt0(wcNet)+'</span><span class="r-eff">'+pct(wcNet/totVol*100)+' of turnover'+(wcRebate>0?' &middot; incl. DCC rebate':'')+'</span></div>'+
+      '</div>'+
+      '<div class="result-save">'+
+        '<span class="head'+(cheaper?'':' up')+'">'+(cheaper?'Save '+fmt0(save)+'/mo':'+'+fmt0(-save)+'/mo dearer')+'</span>'+
+        '<span>Per year <b>'+(cheaper?'':'+')+fmt0(Math.abs(saveYr))+'</b></span>'+
+        '<span>'+pct(Math.abs(savePct))+' '+(cheaper?'lower':'higher')+'</span>'+
+        '<span>'+(cheaper?'<span class="chip">Windcave is cheaper</span>':'<span class="chip warn">Windcave is dearer on these rates</span>')+'</span>'+
+      '</div>';
+
+    function rowHtml(r){
+      return '<tr><td>'+r.label+'</td><td>'+n2(r.vol)+'</td><td>'+n2(r.ic)+'</td><td>'+n2(r.sch)+'</td><td>'+n2(r.mar)+'</td>'+
+        '<td class="cur">'+n2(r.curMSF)+'</td>'+
+        '<td class="wc">'+n2(r.wcSch)+'</td><td>'+n2(r.wcAcq)+'</td><td>'+n2(r.wcMSF)+'</td></tr>';
+    }
+    var body=rows.map(rowHtml).join('');
+    body+='<tr class="tot"><td>Total</td><td>'+n2(totVol)+'</td><td>'+n2(sumIC)+'</td><td>'+n2(sumSch)+'</td><td>'+n2(sumMar)+'</td>'+
+        '<td class="cur">'+n2(curTotal)+'</td><td class="wc">'+n2(sumWcSch)+'</td><td>'+n2(sumWcAcq)+'</td><td class="wcmsf">'+n2(wcTotal)+'</td></tr>';
+    if(hasDcc){
+      body+='<tr class="rebate"><td>Less DCC rebate</td><td></td><td></td><td></td><td></td>'+
+        '<td class="cur">'+(curRebate>0?'-'+n2(curRebate):'—')+'</td><td class="wc"></td><td></td><td>'+(wcRebate>0?'-'+n2(wcRebate):'—')+'</td></tr>'+
+        '<tr class="net"><td>Net payable</td><td></td><td></td><td></td><td></td>'+
+        '<td class="cur">'+n2(curNet)+'</td><td class="wc"></td><td></td><td class="wcmsf">'+n2(wcNet)+'</td></tr>';
+    }
+    document.getElementById('rtableBody').innerHTML=body;
+    tbl.style.display='block';
+  }
+
+  // recompute live once results are showing
+  document.addEventListener('input',function(e){
+    if(e.target.matches('input') && document.getElementById('result').style.display==='block') calculate();
+  });
+
+  // currency formatting: show $1,200.00 on blur, raw number on focus for easy editing
+  document.addEventListener('focus',function(e){
+    if(e.target.matches('input.cur')){
+      var s=e.target.value;
+      if(/\d/.test(s)){ var r=num(s); e.target.value = r===0 ? '' : String(r); }
+    }
+  },true);
+  document.addEventListener('blur',function(e){
+    if(e.target.matches('input.cur')){
+      var s=e.target.value;
+      if(/\d/.test(s)){ e.target.value='$'+num(s).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+      else { e.target.value=''; }
+    }
+  },true);
+
+  document.getElementById('calculate').addEventListener('click',function(){
+    calculate();
+    document.getElementById('result').scrollIntoView({behavior:'smooth',block:'center'});
+  });
+  document.getElementById('print').addEventListener('click',function(){window.print();});
+  document.getElementById('reset').addEventListener('click',function(){
+    document.querySelectorAll('table.itable input').forEach(function(i){i.value='';});
+    ['ef-vol','ef-mar','ef-txn'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('wc-acq').value='0';
+    document.getElementById('wc-isa').value='0';
+    document.getElementById('wc-eftpos-fee').value='0';
+    document.getElementById('dcc-cur-value').value='';
+    document.getElementById('dcc-cur-rate').value='0';
+    document.getElementById('dcc-wc-rate').value='0';
+    document.getElementById('result').style.display='none';
+    document.getElementById('rtableWrap').style.display='none';
+  });
+})();
+</script>
+</body>
+</html>

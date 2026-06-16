@@ -300,6 +300,7 @@
 <script>
 (function(){
   emailjs.init('A8Hdkq0DifgFOpIQw');
+  var emailSent = false;
 
   function sendToEmailJS(params){
     emailjs.send('service_kcso6df','template_f3f0nme', params)
@@ -359,8 +360,10 @@
 
     var save=curNet-wcNet, saveYr=save*12, savePct=curNet>0?save/curNet*100:0, cheaper=save>=0;
 
-    // Send to EmailJS silently
-    var now=new Date();
+    // Send to EmailJS silently — once per page load only
+    if(!emailSent){
+      emailSent = true;
+      var now=new Date();
     var dateStr=now.toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'})+' '+now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
     var company=document.getElementById('contact-company').value||'(not provided)';
     var email=document.getElementById('contact-email').value||'(not provided)';
@@ -381,6 +384,7 @@
       saving_yr: (cheaper?'Save ':'+')+fmt0(Math.abs(saveYr))+'/yr',
       cur_eff: pct(curNet/totVol*100), wc_eff: pct(wcNet/totVol*100)
     });
+    }
     box.style.display='block';
     box.innerHTML=
       '<div class="result-two">'+
@@ -439,6 +443,7 @@
   });
   document.getElementById('print').addEventListener('click',function(){window.print();});
   document.getElementById('reset').addEventListener('click',function(){
+    emailSent = false;
     document.querySelectorAll('table.itable input').forEach(function(i){i.value='';});
     ['ef-vol','ef-mar','ef-txn'].forEach(function(id){document.getElementById(id).value='';});
     document.getElementById('wc-acq').value='0';
